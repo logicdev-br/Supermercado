@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supermercado Bom Preço | Sistema Inteligente de Validade & Previsão de Demanda com IA</title>
+  <meta name="description" content="Plataforma de gestão inteligente de vencimentos, precificação dinâmica e previsão de demanda com Inteligência Artificial para o Supermercado Bom Preço.">
+  
+  <!-- Estilos e Fontes -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Chart.js para Visualização de Dados -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ====================================================================
+         SIDEBAR LATERAL FIXO (NAVEGAÇÃO PRINCIPAL)
+         ==================================================================== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="#dashboard" class="brand-link" title="Supermercado Bom Preço">
+          <img src="img/logo-bompreco.png" alt="Supermercado Bom Preço" class="brand-logo-img">
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Menu Principal</div>
+        
+        <a href="#dashboard" class="nav-item active" data-target="tab-dashboard" id="nav-dashboard">
+          <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+          <span>Dashboard & KPIs</span>
+        </a>
+
+        <a href="#kanban" class="nav-item" data-target="tab-kanban" id="nav-kanban">
+          <i data-lucide="kanban" style="width: 18px; height: 18px;"></i>
+          <span>Fluxo de Validade (5 Etapas)</span>
+          <span class="nav-badge" id="sidebarRiskBadge">7</span>
+        </a>
+
+        <a href="#ai-simulator" class="nav-item" data-target="tab-ai-simulator" id="nav-ai-simulator">
+          <i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>
+          <span>Motor de IA & Previsão</span>
+        </a>
+
+        <a href="#reports" class="nav-item" data-target="tab-reports" id="nav-reports">
+          <i data-lucide="file-bar-chart" style="width: 18px; height: 18px;"></i>
+          <span>Relatórios & Soluções</span>
+        </a>
+
+        <div class="nav-section-title">Apresentação IA</div>
+
+        <a href="#presentation-guide" class="nav-item" data-target="tab-presentation-guide" id="nav-guide">
+          <i data-lucide="presentation" style="width: 18px; height: 18px;"></i>
+          <span>Roteiro de Demonstração</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="ai-presentation-card">
+          <h4><i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> IA no Varejo</h4>
+          <p>Otimização de margem com cálculo de elasticidade e redução de desperdício alimentar.</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ====================================================================
+         CONTEÚDO PRINCIPAL & HEADER SUPERIOR
+         ==================================================================== -->
+    <div class="main-wrapper">
+
+      <!-- HEADER SUPERIOR -->
+      <header class="top-header">
+        <div class="header-left">
+          <div class="page-title-area">
+            <h2 id="pageMainTitle">Dashboard Executivo & Indicadores</h2>
+            <p id="pageMainSub">Visão geral de perdas evitadas, previsão de demanda e giro de produtos</p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Quick Role Switcher para Demonstração Escolar -->
+          <div class="role-switcher-box">
+            <label for="headerRoleSwitcher">
+              <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--primary-600);"></i>
+              Perfil:
+            </label>
+            <select id="headerRoleSwitcher" class="role-select">
+              <option value="gerente">Gerente Geral (Acesso Total)</option>
+              <option value="comprador">Comprador / Gestor Estoque</option>
+            </select>
+          </div>
+
+          <!-- Botão Ação Rápida: Novo Lote -->
+          <button class="btn btn-primary" id="btnOpenNewBatchModal">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            Novo Lote em Risco
+          </button>
+
+          <!-- Perfil do Usuário -->
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="headerUserAvatar">RK</div>
+            <div class="user-info">
+              <div class="user-name" id="headerUserName">Robert Kennedy</div>
+              <div class="user-role-tag" id="headerUserRole">Administrador / Gerente Geral</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- CORPO DAS TELAS (TAB VIEWS) -->
+      <main class="main-content">
+
+        <!-- ================================================================
+             VIEW 1: DASHBOARD & RELATÓRIOS GRÁFICOS
+             ================================================================ -->
+        <section id="tab-dashboard" class="tab-view active">
+          
+          <!-- Cards de KPIs Principais -->
+          <div class="kpi-grid">
+            <div class="kpi-card warning">
+              <div>
+                <div class="kpi-label">Lotes em Monitoramento</div>
+                <div class="kpi-value" id="kpiRiskCount">6</div>
+                <div class="kpi-subtext" id="kpiCriticalCount" style="color: var(--danger-600);">
+                  <i data-lucide="alert-triangle" style="width: 13px; height: 13px;"></i> 2 críticos (&lt; 48h)
+                </div>
+              </div>
+              <div class="kpi-icon-wrap">
+                <i data-lucide="alert-circle" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div>
+                <div class="kpi-label">Economia Total Salva</div>
+                <div class="kpi-value" id="kpiEconomySaved">R$ 18.450,00</div>
+                <div class="kpi-subtext">
+                  <i data-lucide="trending-up" style="width: 13px; height: 13px;"></i> +24% vs mês anterior
+                </div>
+              </div>
+              <div class="kpi-icon-wrap">
+                <i data-lucide="badge-dollar-sign" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+
+            <div class="kpi-card warning">
+              <div>
+                <div class="kpi-label">Desconto Médio Aplicado</div>
+                <div class="kpi-value" id="kpiAvgDiscount">35.2%</div>
+                <div class="kpi-subtext" style="color: var(--amber-700);">
+                  <i data-lucide="percent" style="width: 13px; height: 13px;"></i> Calculado dinamicamente por IA
+                </div>
+              </div>
+              <div class="kpi-icon-wrap">
+                <i data-lucide="tag" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div>
+                <div class="kpi-label">Desperdício Evitado</div>
+                <div class="kpi-value" id="kpiWasteRate">96.8%</div>
+                <div class="kpi-subtext">
+                  <i data-lucide="shield-check" style="width: 13px; height: 13px;"></i> Taxa de conversão de risco
+                </div>
+              </div>
+              <div class="kpi-icon-wrap">
+                <i data-lucide="sparkles" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 1 de Gráficos: Indicador de Descontos vs Margem e Previsão de Demanda -->
+          <div class="charts-row">
+            <div class="chart-panel">
+              <div class="chart-header">
+                <div>
+                  <h3><i data-lucide="bar-chart-2" style="width: 17px; height: 17px; color: var(--primary-600);"></i> Indicador de Descontos Aplicados vs. Margem Salva</h3>
+                  <p>Equilíbrio entre a porcentagem de desconto para aceleração de vendas e a margem bruta preservada</p>
+                </div>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="chartDiscountMargin"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <div class="chart-header">
+                <div>
+                  <h3><i data-lucide="pie-chart" style="width: 17px; height: 17px; color: var(--primary-600);"></i> Custo da Solução vs. Perda Evitada</h3>
+                  <p>Balanço do investimento em promoções/etiquetas vs. receita líquida recuperada</p>
+                </div>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="chartCostSolution"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 2 de Gráficos: Previsão de Demanda Mensal & Top Produtos Mais Vendidos -->
+          <div class="charts-row-equal">
+            <div class="chart-panel">
+              <div class="chart-header">
+                <div>
+                  <h3><i data-lucide="trending-up" style="width: 17px; height: 17px; color: var(--primary-600);"></i> Previsão de Demanda Mensal (IA Preditiva)</h3>
+                  <p>Projeção de consumo para calibrar ordens de compra e evitar excesso de estoque</p>
+                </div>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="chartDemandForecast"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <div class="chart-header">
+                <div>
+                  <h3><i data-lucide="award" style="width: 17px; height: 17px; color: var(--primary-600);"></i> Ranking: Produtos com Maior Giro</h3>
+                  <p>Itens de alta rotatividade para compras assertivas com fornecedores parceiros</p>
+                </div>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="chartTopProducts"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================================================================
+             VIEW 2: KANBAN FLUXO DO PROBLEMA (5 ETAPAS)
+             ================================================================ -->
+        <section id="tab-kanban" class="tab-view">
+
+          <!-- Barra de Busca e Filtros do Kanban -->
+          <div class="kanban-header-controls">
+            <div class="search-filter-bar">
+              <div class="search-input-wrap">
+                <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
+                <input type="text" id="kanbanSearchInput" placeholder="Buscar por produto, lote ou fornecedor...">
+              </div>
+              <select id="kanbanCategoryFilter" class="filter-select">
+                <option value="all">Todos os Setores</option>
+                <option value="Laticínios">Laticínios</option>
+                <option value="Frios & Embutidos">Frios & Embutidos</option>
+                <option value="Açougue">Açougue</option>
+                <option value="Padaria">Padaria</option>
+                <option value="Hortifrúti">Hortifrúti</option>
+                <option value="Mercearia">Mercearia</option>
+              </select>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="move" style="width: 14px; height: 14px;"></i>
+              Arraste os cards entre as colunas para atualizar o fluxo do problema
+            </div>
+          </div>
+
+          <!-- Quadro Kanban em 5 Colunas -->
+          <div class="kanban-board">
+            
+            <!-- Coluna 1: Identificação -->
+            <div class="kanban-column col-1">
+              <div class="kanban-column-header">
+                <div class="column-title-group">
+                  <div class="step-indicator-badge">1</div>
+                  <h4>Identificação</h4>
+                </div>
+                <span class="column-count" id="count-step-1">0</span>
+              </div>
+              <div class="kanban-cards-container" id="kanban-step-1" data-step="1"></div>
+            </div>
+
+            <!-- Coluna 2: Análise de Desconto (IA) -->
+            <div class="kanban-column col-2">
+              <div class="kanban-column-header">
+                <div class="column-title-group">
+                  <div class="step-indicator-badge">2</div>
+                  <h4>Análise Desconto</h4>
+                </div>
+                <span class="column-count" id="count-step-2">0</span>
+              </div>
+              <div class="kanban-cards-container" id="kanban-step-2" data-step="2"></div>
+            </div>
+
+            <!-- Coluna 3: Encaminhamento -->
+            <div class="kanban-column col-3">
+              <div class="kanban-column-header">
+                <div class="column-title-group">
+                  <div class="step-indicator-badge">3</div>
+                  <h4>Encaminhamento</h4>
+                </div>
+                <span class="column-count" id="count-step-3">0</span>
+              </div>
+              <div class="kanban-cards-container" id="kanban-step-3" data-step="3"></div>
+            </div>
+
+            <!-- Coluna 4: Execução -->
+            <div class="kanban-column col-4">
+              <div class="kanban-column-header">
+                <div class="column-title-group">
+                  <div class="step-indicator-badge">4</div>
+                  <h4>Execução (PDV)</h4>
+                </div>
+                <span class="column-count" id="count-step-4">0</span>
+              </div>
+              <div class="kanban-cards-container" id="kanban-step-4" data-step="4"></div>
+            </div>
+
+            <!-- Coluna 5: Conclusão / Resolvido -->
+            <div class="kanban-column col-5">
+              <div class="kanban-column-header">
+                <div class="column-title-group">
+                  <div class="step-indicator-badge">5</div>
+                  <h4>Resolvido</h4>
+                </div>
+                <span class="column-count" id="count-step-5">0</span>
+              </div>
+              <div class="kanban-cards-container" id="kanban-step-5" data-step="5"></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================================================================
+             VIEW 3: MOTOR DE IA & PREVISÃO DE DEMANDA
+             ================================================================ -->
+        <section id="tab-ai-simulator" class="tab-view">
+
+          <div class="ai-engine-banner">
+            <div class="ai-banner-text">
+              <h2>Motor Inteligente de Elasticidade e Precificação</h2>
+              <p>Simulador interativo em tempo real para cálculo de desconto dinâmico e preservação de margem contra desperdício no supermercado.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 0.75rem 1.25rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 700;">
+              <i data-lucide="cpu" style="width: 16px; height: 16px;"></i> Algoritmo: Decaimento Temporal + Elasticidade
+            </div>
+          </div>
+
+          <!-- Simulador Interativo de IA -->
+          <div class="ai-interactive-panel">
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="sliders" style="width: 18px; height: 18px; color: var(--primary-600);"></i>
+              Simulador de Desconto Recomendado pela IA (Ao Vivo)
+            </h3>
+
+            <div class="simulator-calculator-box">
+              
+              <!-- Painel de Entradas (Inputs) -->
+              <div>
+                <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 1rem;">Parâmetros do Lote</h4>
+                
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Setor / Categoria:</label>
+                    <select id="simCategory">
+                      <option value="Laticínios">Laticínios (Alta Elasticidade)</option>
+                      <option value="Açougue">Açougue (Validade Curta)</option>
+                      <option value="Padaria">Padaria (Giro Diário)</option>
+                      <option value="Hortifrúti">Hortifrúti (Perecível Rápido)</option>
+                      <option value="Mercearia">Mercearia (Estável)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Dias Restantes para Vencer:</label>
+                    <input type="number" id="simDaysToExpiry" value="3" min="1" max="30">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Quantidade no Lote:</label>
+                    <input type="number" id="simQuantity" value="50" min="1">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Preço de Custo (R$):</label>
+                    <input type="number" id="simCostPrice" value="6.50" step="0.10" min="0.50">
+                  </div>
+
+                  <div class="form-group-full form-group">
+                    <label>Preço de Venda Normal (R$):</label>
+                    <input type="number" id="simOriginalPrice" value="12.00" step="0.10" min="1.00">
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" id="btnRunAiSimulator" style="margin-top: 1.25rem; width: 100%;">
+                  <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> Executar Cálculo com IA
+                </button>
+              </div>
+
+              <!-- Painel de Saída (Output da IA) -->
+              <div class="sim-output-card">
+                <div>
+                  <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--primary-700);">Recomendação Otimizada</span>
+                  <div class="sim-highlight-value" id="simOutputDiscount">35% OFF</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Preço Promocional Sugerido: <strong id="simOutputNewPrice" style="color: var(--text-main); font-size: 1.05rem;">R$ 7,80</strong>
+                  </div>
+
+                  <div style="background: var(--bg-app); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                      <span>Receita Total Recuperada:</span>
+                      <strong id="simOutputRecoveredMargin" style="color: var(--primary-700);">R$ 390,00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Recuperação do Custo Investido:</span>
+                      <strong id="simOutputRecoveredRate" style="color: var(--primary-700);">120.0%</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="border-top: 1px dashed var(--border-light); padding-top: 0.75rem;">
+                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Justificativa do Algoritmo:</span>
+                  <p id="simOutputReasoning" style="font-size: 0.78rem; color: var(--primary-900); margin-top: 0.25rem; line-height: 1.4;"></p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Tabela de Previsão de Demanda por Setor -->
+          <div class="table-card">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+              <h3 style="font-size: 1.05rem; font-weight: 800;">
+                <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--primary-600);"></i>
+                Ajuste Preditivo de Pedidos para Fornecedores
+              </h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Comprador: Use estas métricas para evitar pedidos em excesso</span>
+            </div>
+
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Setor</th>
+                  <th>Estoque Atual</th>
+                  <th>Média Mensal</th>
+                  <th>Previsão IA (Próx. Mês)</th>
+                  <th>Tendência</th>
+                  <th>Ajuste de Pedido</th>
+                  <th>Diagnóstico da IA</th>
+                </tr>
+              </thead>
+              <tbody id="demandForecastTableBody">
+                <!-- Preenchido dinamicamente pelo JS -->
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
+        <!-- ================================================================
+             VIEW 4: RELATÓRIOS & AUDITORIA DE SOLUÇÕES
+             ================================================================ -->
+        <section id="tab-reports" class="tab-view">
+
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 800;">Auditoria Geral de Lotes e Custos de Solução</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Acompanhamento completo de ações, custos operacionais e margem resgatada</p>
+            </div>
+            <button class="btn btn-outline" onclick="window.print()">
+              <i data-lucide="printer" style="width: 16px; height: 16px;"></i> Imprimir Relatório Executivo
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Código Lote</th>
+                  <th>Produto</th>
+                  <th>Setor</th>
+                  <th>Validade</th>
+                  <th>Estoque</th>
+                  <th>Etapa Atual</th>
+                  <th>Desconto</th>
+                  <th>Custo Solução</th>
+                  <th>Status & Responsável</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>LOTE-2026-081</code></td>
+                  <td><strong>Iogurte Grego 500g</strong></td>
+                  <td>Laticínios</td>
+                  <td>21/09/2026</td>
+                  <td>65 un</td>
+                  <td><span class="expiry-tag warning">1. Identificação</span></td>
+                  <td><strong>35% Sugerido</strong></td>
+                  <td>R$ 120,00</td>
+                  <td>Mariana Silva (Comprador)</td>
+                </tr>
+                <tr>
+                  <td><code>LOTE-2026-082</code></td>
+                  <td><strong>Queijo Mussarela 400g</strong></td>
+                  <td>Frios & Embutidos</td>
+                  <td>22/09/2026</td>
+                  <td>45 un</td>
+                  <td><span class="expiry-tag warning">2. Análise</span></td>
+                  <td><strong>30% IA</strong></td>
+                  <td>R$ 0,00</td>
+                  <td>Mariana Silva</td>
+                </tr>
+                <tr>
+                  <td><code>LOTE-2026-083</code></td>
+                  <td><strong>Peito de Frango 1kg</strong></td>
+                  <td>Açougue</td>
+                  <td>20/09/2026</td>
+                  <td>38 kg</td>
+                  <td><span class="expiry-tag critical">3. Encaminhamento</span></td>
+                  <td><strong>40% OFF</strong></td>
+                  <td>R$ 95,00</td>
+                  <td>Marcos Souza (Açougue)</td>
+                </tr>
+                <tr>
+                  <td><code>LOTE-2026-084</code></td>
+                  <td><strong>Pão de Forma Grãos 500g</strong></td>
+                  <td>Padaria</td>
+                  <td>21/09/2026</td>
+                  <td>50 un</td>
+                  <td><span class="expiry-tag safe">4. Execução</span></td>
+                  <td><strong>45% Ativo</strong></td>
+                  <td>R$ 40,00</td>
+                  <td>Cláudia Ramos (Frente Loja)</td>
+                </tr>
+                <tr>
+                  <td><code>LOTE-2026-080</code></td>
+                  <td><strong>Manga Tommy Selecionada</strong></td>
+                  <td>Hortifrúti</td>
+                  <td>19/09/2026</td>
+                  <td>80 kg</td>
+                  <td><span class="expiry-tag safe">5. Resolvido</span></td>
+                  <td><strong>50% Concluído</strong></td>
+                  <td>R$ 35,00</td>
+                  <td><strong style="color: var(--primary-700);">Economia: R$ 560,00</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
+        <!-- ================================================================
+             VIEW 5: GUIA E ROTEIRO PARA APRESENTAÇÃO ESCOLAR DE IA
+             ================================================================ -->
+        <section id="tab-presentation-guide" class="tab-view">
+
+          <div style="background: white; border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 1.75rem; box-shadow: var(--shadow-xs); margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+              <div style="background: var(--primary-50); color: var(--primary-700); width: 38px; height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--primary-200); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="presentation" style="width: 20px; height: 20px;"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">Roteiro de Demonstração para a Escola de IA</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Siga este roteiro durante a sua apresentação para demonstrar cada diferencial técnico do projeto.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              
+              <!-- Bloco 1 -->
+              <div style="background: var(--bg-app); border-radius: var(--radius-sm); padding: 1.25rem; border: 1px solid var(--border-light);">
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.4rem;">
+                  1. O Problema no Varejo Supermercadista
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-body); line-height: 1.5;">
+                  Supermercados perdem anualmente até 3% do seu faturamento bruto por descarte de produtos vencidos. Falta de monitoramento proativo e decisões tardias geram desperdício alimentar e prejuízo financeiro.
+                </p>
+              </div>
+
+              <!-- Bloco 2 -->
+              <div style="background: var(--bg-app); border-radius: var(--radius-sm); padding: 1.25rem; border: 1px solid var(--border-light);">
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.4rem;">
+                  2. A Solução com IA: 5 Etapas no Kanban
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-body); line-height: 1.5;">
+                  <strong>Identificação &rarr; Análise de Desconto &rarr; Encaminhamento &rarr; Execução &rarr; Resolvido</strong>.<br>
+                  O Kanban dinâmico permite acompanhar cada lote em risco e agir antes que o produto alcance a data crítica.
+                </p>
+              </div>
+
+              <!-- Bloco 3 -->
+              <div style="background: var(--bg-app); border-radius: var(--radius-sm); padding: 1.25rem; border: 1px solid var(--border-light);">
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.4rem;">
+                  3. O Algoritmo de Elasticidade de Preço (IA)
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-body); line-height: 1.5;">
+                  A IA calcula o desconto exato necessário para esgotar o estoque a tempo (nem mais nem menos), maximizando a margem bruta salva e evitando o descarte total (perda de 100% do custo).
+                </p>
+              </div>
+
+              <!-- Bloco 4 -->
+              <div style="background: var(--bg-app); border-radius: var(--radius-sm); padding: 1.25rem; border: 1px solid var(--border-light);">
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.4rem;">
+                  4. Previsão de Demanda Mensal Preditiva
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-body); line-height: 1.5;">
+                  O sistema analisa sazonalidade e giro para alertar os Compradores sobre pedidos com fornecedores, prevenindo a raiz do problema: compras com volume excessivo.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAIS DO SISTEMA
+       ==================================================================== -->
+
+  <!-- MODAL 1: NOVO LOTE (PASSO 1: IDENTIFICAÇÃO) -->
+  <div class="modal-overlay" id="modalNewBatch">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i data-lucide="plus-circle" style="width: 20px; height: 20px; color: var(--primary-600);"></i> Registrar Lote com Validade Curta (Etapa 1)</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('modalNewBatch')">&times;</button>
+      </div>
+      <form id="formNewBatch">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group-full form-group">
+              <label>Nome do Produto / Descrição do Lote *</label>
+              <input type="text" name="productName" placeholder="Ex: Queijo Parmesão Ralado 100g" required>
+            </div>
+
+            <div class="form-group">
+              <label>Setor / Departamento *</label>
+              <select name="category" required>
+                <option value="Laticínios">Laticínios</option>
+                <option value="Frios & Embutidos">Frios & Embutidos</option>
+                <option value="Açougue">Açougue</option>
+                <option value="Padaria">Padaria</option>
+                <option value="Hortifrúti">Hortifrúti</option>
+                <option value="Mercearia">Mercearia</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Fornecedor Parceiro</label>
+              <input type="text" name="supplier" placeholder="Ex: Laticínios Alvorada">
+            </div>
+
+            <div class="form-group">
+              <label>Data de Vencimento *</label>
+              <input type="date" name="expiryDate" value="2026-09-22" required>
+            </div>
+
+            <div class="form-group">
+              <label>Quantidade em Estoque *</label>
+              <input type="number" name="quantity" value="40" min="1" required>
+            </div>
+
+            <div class="form-group">
+              <label>Unidade de Medida</label>
+              <select name="unit">
+                <option value="un">Unidade (un)</option>
+                <option value="kg">Quilograma (kg)</option>
+                <option value="pct">Pacote (pct)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Preço de Custo Unitário (R$) *</label>
+              <input type="number" name="costPrice" value="5.50" step="0.05" min="0.10" required>
+            </div>
+
+            <div class="form-group-full form-group">
+              <label>Preço de Venda Normal (R$) *</label>
+              <input type="number" name="originalPrice" value="10.90" step="0.05" min="0.20" required>
+            </div>
+
+            <div class="form-group-full form-group">
+              <label>Observação da Recepção / Conferência</label>
+              <textarea name="statusNote" rows="2" placeholder="Motivo do alerta de validade curta..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="App.closeModal('modalNewBatch')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="check" style="width: 16px; height: 16px;"></i> Registrar no Kanban
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ENCAMINHAR LOTE (PASSO 3: ENCAMINHAMENTO) -->
+  <div class="modal-overlay" id="modalAssignBatch">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i data-lucide="send" style="width: 20px; height: 20px; color: var(--amber-600);"></i> Encaminhamento de Ação (Etapa 3)</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('modalAssignBatch')">&times;</button>
+      </div>
+      <form id="formAssignBatch">
+        <input type="hidden" name="batchId">
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Lote Selecionado: <strong id="assignBatchName" style="color: var(--text-main);"></strong>
+          </p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Setor Responsável *</label>
+              <select name="assignedSector" required>
+                <option value="Laticínios & Frios">Laticínios & Frios</option>
+                <option value="Açougue & Carnes">Açougue & Carnes</option>
+                <option value="Padaria & Confeitaria">Padaria & Confeitaria</option>
+                <option value="Hortifrúti">Hortifrúti</option>
+                <option value="Frente de Loja">Frente de Loja / PDV</option>
+                <option value="Compras / Fornecedor">Compras / Devolução ao Fornecedor</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Pessoa / Líder Responsável *</label>
+              <input type="text" name="responsiblePerson" placeholder="Ex: Roberto Dias (Líder)" required>
+            </div>
+
+            <div class="form-group">
+              <label>Prazo Limite de Ação (SLA) *</label>
+              <input type="text" name="actionDeadline" value="2026-09-19 14:00" required>
+            </div>
+
+            <div class="form-group">
+              <label>Custo Estimado da Solução (R$)</label>
+              <input type="number" name="solutionCost" value="45.00" step="1.00">
+            </div>
+
+            <div class="form-group-full form-group">
+              <label>Estratégia Adotada *</label>
+              <select name="solutionType" required>
+                <option value="Etiquetagem Amarela com Desconto no PDV">Etiquetagem Amarela com Desconto no PDV</option>
+                <option value="Ilha Promocional de Entrada (Giro Rápido)">Ilha Promocional de Entrada (Giro Rápido)</option>
+                <option value="Aproveitamento em Rotisseria / Padaria Interna">Aproveitamento em Rotisseria / Padaria Interna</option>
+                <option value="Devolução / Troca com o Fornecedor">Devolução / Troca com o Fornecedor</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="App.closeModal('modalAssignBatch')">Cancelar</button>
+          <button type="submit" class="btn btn-amber">
+            <i data-lucide="send" style="width: 16px; height: 16px;"></i> Confirmar Encaminhamento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CONCLUIR & RESOLVER LOTE (PASSO 5: CONCLUSÃO) -->
+  <div class="modal-overlay" id="modalResolveBatch">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i data-lucide="check-circle" style="width: 20px; height: 20px; color: var(--primary-600);"></i> Conclusão e Resolução do Lote (Etapa 5)</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('modalResolveBatch')">&times;</button>
+      </div>
+      <form id="formResolveBatch">
+        <input type="hidden" name="batchId">
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Lote: <strong id="resolveBatchName" style="color: var(--text-main);"></strong>
+          </p>
+
+          <div style="background: var(--primary-50); border: 1px solid var(--primary-200); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-800);">Economia Estimada Preservada:</div>
+            <div id="resolveEstimatedEconomy" style="font-size: 1.4rem; font-weight: 800; color: var(--primary-700);">R$ 0,00</div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Unidades Efetivamente Vendidas *</label>
+              <input type="number" name="unitsSold" value="40" min="0" required>
+            </div>
+
+            <div class="form-group-full form-group">
+              <label>Parecer Final / Registro da Solução *</label>
+              <textarea name="finalOutcomeNote" rows="3" required placeholder="Descreva o resultado da promoção e encerramento do lote..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="App.closeModal('modalResolveBatch')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="badge-check" style="width: 16px; height: 16px;"></i> Marcar como Resolvido
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE TOASTS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts da Aplicação -->
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/kanban.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
